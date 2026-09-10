@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Story Poster — Candeias Coaching</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1219; --panel:#161c27; --line:#232b3a;
+    --ink:#e8ecf3; --mute:#8d99ad; --amber:#f0a92b;
+    --ok:#3fb96b; --bad:#e2564d;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.55 Inter,system-ui,-apple-system,sans-serif;
+    padding:32px 20px 64px;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+  h1{
+    font:400 44px/1 'Bebas Neue',Oswald,Impact,sans-serif;
+    letter-spacing:.02em; margin:0 0 4px;
+  }
+  h1 span{color:var(--amber)}
+  .sub{color:var(--mute);margin:0 0 28px;font-size:14px}
+  .card{
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:10px; padding:20px; margin-bottom:16px;
+  }
+  .banner{
+    display:flex;align-items:center;gap:12px;
+    font-weight:600;font-size:17px;
+  }
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--mute);flex:none}
+  .dot.ok{background:var(--ok);box-shadow:0 0 0 4px rgba(63,185,107,.16)}
+  .dot.bad{background:var(--bad);box-shadow:0 0 0 4px rgba(226,86,77,.16)}
+  h2{
+    font:400 20px/1 'Bebas Neue',Oswald,sans-serif;
+    letter-spacing:.04em; color:var(--mute);
+    margin:0 0 14px; text-transform:uppercase;
+  }
+  table{width:100%;border-collapse:collapse}
+  td{padding:8px 0;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+  tr:last-child td{border-bottom:0}
+  td:first-child{color:var(--mute);width:42%;padding-right:16px}
+  td:last-child{font-variant-numeric:tabular-nums;word-break:break-word}
+  .v-ok{color:var(--ok)} .v-bad{color:var(--bad);font-weight:600}
+  ul{margin:0;padding-left:18px} li{margin:4px 0}
+  .empty{color:var(--mute);font-style:italic}
+  a{color:var(--amber)}
+  .links{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+  .links a{
+    display:inline-block;padding:9px 15px;border:1px solid var(--line);
+    border-radius:7px;text-decoration:none;font-size:13px;font-weight:500;
+    background:var(--panel);
+  }
+  .links a:hover{border-color:var(--amber)}
+  code{background:#0a0d13;padding:2px 6px;border-radius:4px;font-size:13px}
+  @media(max-width:520px){
+    h1{font-size:34px} td:first-child{width:50%}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Story <span>Poster</span></h1>
+  <p class="sub">Scheduled Instagram Story publishing — Candeias Coaching</p>
+
+  <div class="card">
+    <div class="banner"><span class="dot" id="dot"></span><span id="headline">Checking…</span></div>
+  </div>
+
+  <div class="card">
+    <h2>Configuration</h2>
+    <table id="config"><tr><td class="empty" colspan="2">Loading…</td></tr></table>
+  </div>
+
+  <div class="card">
+    <h2>Scheduled today</h2>
+    <div id="today" class="empty">Loading…</div>
+  </div>
+
+  <div class="links">
+    <a href="/api/status">Raw status JSON</a>
+    <a href="/api/post-story?dryRun=1">Dry run</a>
+  </div>
+</div>
+
+<script>
+const LABELS = {
+  igUserId:'Instagram user ID', accessToken:'Access token', tokenSource:'Token stored in',
+  publicBaseUrl:'Public base URL', cronSecret:'Cron secret', schedule:'schedule.json',
+  localTime:'Local time', activePosts:'Active posts', instagramApi:'Instagram API',
+  publishingQuota:'Publishing quota'
+};
+const bad = v => /MISSING|FAILED|NOT SET|no auto-refresh/i.test(String(v));
+
+function render(data){
+  const healthy = data.healthy;
+  document.getElementById('dot').className = 'dot ' + (healthy ? 'ok' : 'bad');
+  document.getElementById('headline').textContent =
+    healthy ? 'All systems go' : 'Needs attention';
+
+  const c = data.checks || {};
+  const rows = Object.entries(c)
+    .filter(([k]) => k !== 'today')
+    .map(([k,v]) => {
+      const val = typeof v === 'object' ? JSON.stringify(v) : String(v);
+      const cls = bad(val) ? 'v-bad' : 'v-ok';
+      return `<tr><td>${LABELS[k]||k}</td><td class="${cls}">${esc(val)}</td></tr>`;
+    }).join('');
+  document.getElementById('config').innerHTML = rows || '<tr><td class="empty" colspan="2">No data</td></tr>';
+
+  const today = c.today || [];
+  document.getElementById('today').innerHTML = today.length
+    ? '<ul>' + today.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>'
+    : '<span class="empty">Nothing scheduled for today</span>';
+}
+
+const esc = s => String(s).replace(/[<>&]/g, ch => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[ch]));
+
+fetch('/api/status')
+  .then(r => r.json())
+  .then(render)
+  .catch(err => {
+    document.getElementById('dot').className = 'dot bad';
+    document.getElementById('headline').textContent = 'Could not reach /api/status';
+    document.getElementById('config').innerHTML =
+      `<tr><td class="empty" colspan="2">${esc(err.message)}</td></tr>`;
+    document.getElementById('today').textContent = '—';
+  });
+</script>
+</body>
+</html>
