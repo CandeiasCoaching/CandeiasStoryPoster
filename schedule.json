@@ -1,0 +1,39 @@
+{
+  "timezone": "Europe/Amsterdam",
+  "_comment": [
+    "Times are LOCAL to the timezone above - the code converts to UTC itself,",
+    "so these stay correct across the winter/summer clock change.",
+    "",
+    "Use quarter-hour times (:00 :15 :30 :45) for exact firing; anything else",
+    "goes out at the start of its 15-minute window.",
+    "",
+    "'image' is relative to /public. 'days' takes short weekday names or 'daily'.",
+    "Set 'enabled': false to park a post without deleting it."
+  ],
+  "posts": [
+    {
+      "id": "mon-pre-reel",
+      "image": "ads/example-01.jpg",
+      "days": ["mon"],
+      "time": "18:30",
+      "note": "Warm-up story ahead of the 19:00 Boostable A Reel",
+      "enabled": false
+    },
+    {
+      "id": "wed-midday",
+      "image": "ads/example-02.jpg",
+      "days": ["wed"],
+      "time": "12:00",
+      "note": "Midday offer frame",
+      "enabled": false
+    },
+    {
+      "id": "fri-pre-reel",
+      "image": "ads/example-03.jpg",
+      "days": ["fri"],
+      "time": "18:30",
+      "note": "Warm-up story ahead of the 19:00 Boostable B Reel",
+      "enabled": false
+    }
+  ]
+}

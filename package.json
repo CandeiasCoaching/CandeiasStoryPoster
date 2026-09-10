@@ -1,0 +1,10 @@
+{
+  "name": "candeias-story-poster",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Scheduled Instagram Story publishing for Candeias Coaching via the Meta Content Publishing API",
+  "engines": {
+    "node": ">=20"
+  }
+}
