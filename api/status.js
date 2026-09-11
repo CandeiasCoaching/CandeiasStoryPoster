@@ -7,9 +7,9 @@ import {
   cycleWeek,
   referencedImages,
 } from '../lib/schedule.js';
- 
+
 export const config = { runtime: 'nodejs', maxDuration: 60 };
- 
+
 /**
  * Diagnostic endpoint.
  *
@@ -22,27 +22,27 @@ export const config = { runtime: 'nodejs', maxDuration: 60 };
  */
 export default async function handler(req, res) {
   const checks = {};
- 
+
   try {
     await buildChecks(checks, req);
   } catch (err) {
     checks.fatal = `FAILED: ${err?.message || String(err)}`;
   }
- 
+
   const scan = JSON.stringify({ ...checks, missingMedia: undefined });
   const healthy = !scan.includes('MISSING') && !scan.includes('FAILED');
- 
+
   return res.status(200).json({ healthy, checks });
 }
- 
+
 async function buildChecks(checks, req) {
   const igUserId = process.env.IG_USER_ID;
   const baseUrl = (process.env.PUBLIC_BASE_URL || '').replace(/\/$/, '');
- 
+
   checks.igUserId = igUserId ? 'set' : 'MISSING';
   checks.publicBaseUrl = baseUrl || 'MISSING';
   checks.cronSecret = process.env.CRON_SECRET ? 'set' : 'NOT SET - endpoints are public';
- 
+
   let token = null;
   try {
     token = await getToken();
@@ -51,14 +51,14 @@ async function buildChecks(checks, req) {
   } catch (err) {
     checks.accessToken = `FAILED reading token: ${err.message}`;
   }
- 
+
   let schedule = null;
   try {
     schedule = await loadSchedule();
     const tz = schedule.timezone || 'Europe/Amsterdam';
     const now = nowInZone(tz);
     const week = cycleWeek(schedule);
- 
+
     checks.schedule = 'loaded';
     checks.localTime = `${now.weekday} ${now.clock} (${tz})`;
     checks.rotationWeek = week
@@ -73,8 +73,8 @@ async function buildChecks(checks, req) {
   } catch (err) {
     checks.schedule = `FAILED: ${err.message}`;
   }
- 
-  if (schedule && req?.query?.media) {
+
+  if (schedule && hasFlag(req, 'media')) {
     try {
       const urls = referencedImages(schedule).filter((r) => /^https?:\/\//i.test(r));
       const bad = await checkRemote(urls);
@@ -88,7 +88,7 @@ async function buildChecks(checks, req) {
   } else if (schedule) {
     checks.mediaCheck = 'not run - add ?media=1 to verify every file';
   }
- 
+
   if (igUserId && token) {
     try {
       const limit = await contentPublishingLimit({ igUserId, token });
@@ -99,7 +99,7 @@ async function buildChecks(checks, req) {
     }
   }
 }
- 
+
 /**
  * Check each media URL is fetchable. Runs in small batches with a hard overall
  * deadline so it cannot hang the function, and never throws - anything it
@@ -108,7 +108,7 @@ async function buildChecks(checks, req) {
 async function checkRemote(urls, { batch = 8, perRequestMs = 6000, totalMs = 35000 } = {}) {
   const bad = [];
   const deadline = Date.now() + totalMs;
- 
+
   for (let i = 0; i < urls.length; i += batch) {
     if (Date.now() > deadline) {
       bad.push(`not checked - ran out of time after ${i} of ${urls.length}`);
@@ -118,7 +118,7 @@ async function checkRemote(urls, { batch = 8, perRequestMs = 6000, totalMs = 350
   }
   return bad.sort();
 }
- 
+
 async function checkOne(url, timeoutMs, bad) {
   let label = url;
   try {
@@ -126,10 +126,10 @@ async function checkOne(url, timeoutMs, bad) {
   } catch {
     /* keep the raw url as the label */
   }
- 
+
   try {
     let res = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(timeoutMs) });
- 
+
     // Not every CDN answers HEAD. Ask for one byte before calling it missing.
     if (res.status === 405 || res.status === 501) {
       res = await fetch(url, {
@@ -138,12 +138,12 @@ async function checkOne(url, timeoutMs, bad) {
         signal: AbortSignal.timeout(timeoutMs),
       });
     }
- 
+
     if (!res.ok && res.status !== 206) {
       bad.push(`${res.status} - ${label}`);
       return;
     }
- 
+
     // Catches a PNG renamed to .jpg, which Meta rejects on content, not name.
     const type = res.headers.get('content-type') || '';
     if (type && !/^(image\/jpeg|video\/(mp4|quicktime))/i.test(type)) {
@@ -151,5 +151,18 @@ async function checkOne(url, timeoutMs, bad) {
     }
   } catch (err) {
     bad.push(`unreachable (${err?.name || 'error'}) - ${label}`);
+  }
+}
+
+/**
+ * Read a query flag without relying on req.query, which is not reliably
+ * populated across runtimes. Falls back to parsing req.url directly.
+ */
+function hasFlag(req, name) {
+  if (req?.query && req.query[name] != null && req.query[name] !== '') return true;
+  try {
+    return new URL(req?.url || '', 'http://localhost').searchParams.has(name);
+  } catch {
+    return false;
   }
 }
