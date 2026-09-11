@@ -83,8 +83,19 @@
     <div id="today" class="empty">Loading…</div>
   </div>
 
+  <div class="card">
+    <h2>This rotation week</h2>
+    <div id="week" class="empty">Loading…</div>
+  </div>
+
+  <div class="card" id="missing-card" hidden>
+    <h2>Media problems</h2>
+    <div id="missing"></div>
+  </div>
+
   <div class="links">
-    <a href="/api/status">Raw status JSON</a>
+    <a href="#" id="verify">Verify all media files</a>
+    <a href="/api/status?media=1">Raw status JSON</a>
     <a href="/api/post-story?dryRun=1">Dry run</a>
   </div>
 </div>
@@ -93,10 +104,13 @@
 const LABELS = {
   igUserId:'Instagram user ID', accessToken:'Access token', tokenSource:'Token stored in',
   publicBaseUrl:'Public base URL', cronSecret:'Cron secret', schedule:'schedule.json',
-  localTime:'Local time', activePosts:'Active posts', instagramApi:'Instagram API',
-  publishingQuota:'Publishing quota'
+  localTime:'Local time', rotationWeek:'Rotation week', activePosts:'Active posts',
+  mediaFiles:'Media files', mediaCheck:'Media check',
+  instagramApi:'Instagram API', publishingQuota:'Publishing quota'
 };
+const HIDE = new Set(['today','thisWeek','missingMedia']);
 const bad = v => /MISSING|FAILED|NOT SET|no auto-refresh/i.test(String(v));
+const meh = v => /^not run/i.test(String(v));
 
 function render(data){
   const healthy = data.healthy;
@@ -106,32 +120,58 @@ function render(data){
 
   const c = data.checks || {};
   const rows = Object.entries(c)
-    .filter(([k]) => k !== 'today')
+    .filter(([k]) => !HIDE.has(k))
     .map(([k,v]) => {
       const val = typeof v === 'object' ? JSON.stringify(v) : String(v);
-      const cls = bad(val) ? 'v-bad' : 'v-ok';
+      const cls = bad(val) ? 'v-bad' : meh(val) ? '' : 'v-ok';
       return `<tr><td>${LABELS[k]||k}</td><td class="${cls}">${esc(val)}</td></tr>`;
     }).join('');
   document.getElementById('config').innerHTML = rows || '<tr><td class="empty" colspan="2">No data</td></tr>';
 
-  const today = c.today || [];
-  document.getElementById('today').innerHTML = today.length
-    ? '<ul>' + today.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>'
-    : '<span class="empty">Nothing scheduled for today</span>';
+  list('today', c.today, 'Nothing scheduled for today');
+  list('week', c.thisWeek, 'Nothing scheduled this week');
+
+  const miss = c.missingMedia || [];
+  document.getElementById('missing-card').hidden = !miss.length;
+  if (miss.length) {
+    document.getElementById('missing').innerHTML =
+      '<ul>' + miss.map(m => `<li><code>${esc(m)}</code></li>`).join('') + '</ul>';
+  }
+}
+
+function list(id, items, emptyText){
+  const el = document.getElementById(id);
+  el.innerHTML = (items && items.length)
+    ? '<ul>' + items.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>'
+    : `<span class="empty">${emptyText}</span>`;
 }
 
 const esc = s => String(s).replace(/[<>&]/g, ch => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[ch]));
 
-fetch('/api/status')
-  .then(r => r.json())
-  .then(render)
-  .catch(err => {
-    document.getElementById('dot').className = 'dot bad';
-    document.getElementById('headline').textContent = 'Could not reach /api/status';
-    document.getElementById('config').innerHTML =
-      `<tr><td class="empty" colspan="2">${esc(err.message)}</td></tr>`;
-    document.getElementById('today').textContent = '—';
-  });
+function load(withMedia){
+  const el = document.getElementById('headline');
+  if (withMedia) el.textContent = 'Checking every media file, this takes a moment…';
+  return fetch('/api/status' + (withMedia ? '?media=1' : ''))
+    .then(r => r.json())
+    .then(render)
+    .catch(showError);
+}
+
+document.getElementById('verify').addEventListener('click', e => {
+  e.preventDefault();
+  load(true);
+});
+
+function showError(err){
+  document.getElementById('dot').className = 'dot bad';
+  document.getElementById('headline').textContent = 'Could not reach /api/status';
+  document.getElementById('config').innerHTML =
+    `<tr><td class="empty" colspan="2">${esc(err.message)}</td></tr>`;
+  document.getElementById('today').textContent = '—';
+  document.getElementById('week').textContent = '—';
+}
+
+load(false);
 </script>
 </body>
 </html>
