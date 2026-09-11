@@ -1,39 +1,374 @@
 {
   "timezone": "Europe/Amsterdam",
+  "cycle": {
+    "weeks": 8,
+    "anchorDate": "2026-09-07"
+  },
   "_comment": [
-    "Times are LOCAL to the timezone above - the code converts to UTC itself,",
-    "so these stay correct across the winter/summer clock change.",
-    "",
-    "Use quarter-hour times (:00 :15 :30 :45) for exact firing; anything else",
-    "goes out at the start of its 15-minute window.",
-    "",
-    "'image' is relative to /public. 'days' takes short weekday names or 'daily'.",
-    "Set 'enabled': false to park a post without deleting it."
+    "8-week rotation, loops forever. anchorDate is the Monday that starts week 1.",
+    "Times are LOCAL Amsterdam - the code converts to UTC and survives the clock change.",
+    "Mon/Wed/Fri are absent: reel-reshare days, which the API cannot do.",
+    "w6-thu uses #18 Angelique & Niels because overlay #9 was never made.",
+    "'alternate' is a second file that fits the same slot - swap it into 'media' to use it."
   ],
   "posts": [
     {
-      "id": "mon-pre-reel",
-      "image": "ads/example-01.jpg",
-      "days": ["mon"],
+      "id": "w1-tue",
+      "week": 1,
+      "days": [
+        "tue"
+      ],
       "time": "18:30",
-      "note": "Warm-up story ahead of the 19:00 Boostable A Reel",
-      "enabled": false
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/ov18-emmely-hip-thrust.mp4",
+      "note": "#18 Emmely - afvallen en spieren bouwen",
+      "enabled": true
     },
     {
-      "id": "wed-midday",
-      "image": "ads/example-02.jpg",
-      "days": ["wed"],
-      "time": "12:00",
-      "note": "Midday offer frame",
-      "enabled": false
+      "id": "w1-thu",
+      "week": 1,
+      "days": [
+        "thu"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/ov24-angelique-niels-leg-press.jpg",
+      "note": "#24 Angelique & Niels - na drukke jaren",
+      "enabled": true,
+      "alternate": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/na%20drukke%20jaren.jpg"
     },
     {
-      "id": "fri-pre-reel",
-      "image": "ads/example-03.jpg",
-      "days": ["fri"],
+      "id": "w1-sat",
+      "week": 1,
+      "days": [
+        "sat"
+      ],
       "time": "18:30",
-      "note": "Warm-up story ahead of the 19:00 Boostable B Reel",
-      "enabled": false
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/adsov05-joep-shoulder-warmup.jpg",
+      "note": "#5 Joep - trainen met een oude blessure",
+      "enabled": true,
+      "alternate": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/trainen%20met%20een%20oude%20blessure.jpg"
+    },
+    {
+      "id": "w1-sun",
+      "week": 1,
+      "days": [
+        "sun"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/adsov20-kim-romanian-deadlift.jpg",
+      "note": "#20 Kim - romanian deadlift",
+      "enabled": true
+    },
+    {
+      "id": "w2-tue",
+      "week": 2,
+      "days": [
+        "tue"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/adsov07-lara-lat-pulldown.mp4",
+      "note": "#7 Lara - voor het eerst in de gym",
+      "enabled": true,
+      "alternate": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/voor%20het%20eerst%20in%20de%20gym.jpg"
+    },
+    {
+      "id": "w2-thu",
+      "week": 2,
+      "days": [
+        "thu"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/15%20te%20oud%20om%20te%20beginnen%20bestaat%20niet.jpg",
+      "note": "#15 Angelique & Niels - te oud om te beginnen bestaat niet",
+      "enabled": true
+    },
+    {
+      "id": "w2-sat",
+      "week": 2,
+      "days": [
+        "sat"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/je%20word%20niet%20te%20gespierd.mp4",
+      "note": "#12 Emmely - je word niet te gespierd",
+      "enabled": true
+    },
+    {
+      "id": "w2-sun",
+      "week": 2,
+      "days": [
+        "sun"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/maanden%20niet%20geweest.jpg",
+      "note": "#16 Joep - maanden niet geweest",
+      "enabled": true
+    },
+    {
+      "id": "w3-tue",
+      "week": 3,
+      "days": [
+        "tue"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/4%20je%20hoeft%20geen%20honger%20te%20lijden.mp4",
+      "note": "#4 Kim - je hoeft geen honger te lijden",
+      "enabled": true,
+      "alternate": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/je%20hoeft%20geen%20honger%20te%20lijden.mp4"
+    },
+    {
+      "id": "w3-thu",
+      "week": 3,
+      "days": [
+        "thu"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/13%20een%20stok%20achter%20de%20deur%20nodig.jpg",
+      "note": "#13 Angelique & Niels - stok achter de deur nodig",
+      "enabled": true
+    },
+    {
+      "id": "w3-sat",
+      "week": 3,
+      "days": [
+        "sat"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/2%20sterker%20worden%20met%20zekerheid.mp4",
+      "note": "#2 Lara - sterker worden met zekerheid",
+      "enabled": true
+    },
+    {
+      "id": "w3-sun",
+      "week": 3,
+      "days": [
+        "sun"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/spiermassa%20komt%20niet%20vanzelf.mp4",
+      "note": "#1 Emmely - spiermassa komt niet vanzelf",
+      "enabled": true
+    },
+    {
+      "id": "w4-tue",
+      "week": 4,
+      "days": [
+        "tue"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/je%20eet%20te%20weinig%20eiwit.jpg",
+      "note": "#23 Joep - je eet te weinig eiwit",
+      "enabled": true
+    },
+    {
+      "id": "w4-thu",
+      "week": 4,
+      "days": [
+        "thu"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/22%20geen%208%20weken%20challene.jpg",
+      "note": "#22 Angelique & Niels - geen 8 weken challenge",
+      "enabled": true
+    },
+    {
+      "id": "w4-sat",
+      "week": 4,
+      "days": [
+        "sat"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/11%20drie%20keer%20per%20week%20is%20genoeg.mp4",
+      "note": "#11 Kim - drie keer per week is genoeg",
+      "enabled": true,
+      "alternate": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/drie%20keer%20per%20week%20is%20genoeg.jpg"
+    },
+    {
+      "id": "w4-sun",
+      "week": 4,
+      "days": [
+        "sun"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/21%20je%20hoort%20hier%20wel%20thuis.mp4",
+      "note": "#21 Lara - je hoort hier wel thuis",
+      "enabled": true
+    },
+    {
+      "id": "w5-tue",
+      "week": 5,
+      "days": [
+        "tue"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/stop%20met%20gokken%20in%20de%20gym.mp4",
+      "note": "#8 Emmely - stop met gokken in de gym",
+      "enabled": true
+    },
+    {
+      "id": "w5-thu",
+      "week": 5,
+      "days": [
+        "thu"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/19%20al%20tien%20gratis%20schemas%20geprobeerd.jpg",
+      "note": "#19 Angelique & Niels - al tien gratis schemas geprobeerd",
+      "enabled": true
+    },
+    {
+      "id": "w5-sat",
+      "week": 5,
+      "days": [
+        "sat"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/sterker%20worden%20met%20zekerheid.jpg",
+      "note": "#2 Joep - sterker worden met zekerheid",
+      "enabled": true
+    },
+    {
+      "id": "w5-sun",
+      "week": 5,
+      "days": [
+        "sun"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/16%20maanden%20niet%20geweest.jpg",
+      "note": "#16 Kim - maanden niet geweest",
+      "enabled": true
+    },
+    {
+      "id": "w6-tue",
+      "week": 6,
+      "days": [
+        "tue"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/15%20te%20oud%20om%20te%20beginnen%20bestaat%20niet.mp4",
+      "note": "#15 Lara - te oud om te beginnen bestaat niet",
+      "enabled": true
+    },
+    {
+      "id": "w6-thu",
+      "week": 6,
+      "days": [
+        "thu"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/afvallen%20en%20spieren%20bouwen.jpg",
+      "note": "#18 Angelique & Niels - afvallen en spieren bouwen  [substitute: #9 was never made]",
+      "enabled": true
+    },
+    {
+      "id": "w6-sat",
+      "week": 6,
+      "days": [
+        "sat"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/vet%20verliezen%20zonder%20alles%20te%20schrappen.mp4",
+      "note": "#3 Emmely - vet verliezen zonder alles te schrappen",
+      "enabled": true
+    },
+    {
+      "id": "w6-sun",
+      "week": 6,
+      "days": [
+        "sun"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/je%20hoeft%20niet%20pijnvrij%20te%20zijn%20om%20te%20beginnen.jpg",
+      "note": "#6 Joep - je hoeft niet pijnvrij te zijn om te beginnen",
+      "enabled": true,
+      "alternate": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/je%20hoeft%20niet%20pijnvrij%20te%20zijn%20om%20te%20beginnen2.jpg"
+    },
+    {
+      "id": "w7-tue",
+      "week": 7,
+      "days": [
+        "tue"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/13%20stok%20achter%20de%20deur%20nodig.mp4",
+      "note": "#13 Kim - stok achter de deur nodig",
+      "enabled": true
+    },
+    {
+      "id": "w7-thu",
+      "week": 7,
+      "days": [
+        "thu"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/17%20motivatie%20raakt%20op%20structuur%20niet.jpg",
+      "note": "#17 Angelique & Niels - motivatie raakt op structuur niet",
+      "enabled": true
+    },
+    {
+      "id": "w7-sat",
+      "week": 7,
+      "days": [
+        "sat"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/6%20je%20hoeft%20niet%20pijnvrij%20te%20zijn%20om%20te%20beginnen.mp4",
+      "note": "#6 Lara - je hoeft niet pijnvrij te zijn om te beginnen",
+      "enabled": true
+    },
+    {
+      "id": "w7-sun",
+      "week": 7,
+      "days": [
+        "sun"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/je%20hoort%20hier%20wel%20thuis.mp4",
+      "note": "#21 Emmely - je hoort hier wel thuis",
+      "enabled": true
+    },
+    {
+      "id": "w8-tue",
+      "week": 8,
+      "days": [
+        "tue"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/3%20vet%20verliezen%20zonder%20alles%20te%20schrappen.mp4",
+      "note": "#3 Kim - vet verliezen zonder alles te schrappen",
+      "enabled": true
+    },
+    {
+      "id": "w8-thu",
+      "week": 8,
+      "days": [
+        "thu"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/11%20drie%20keer%20per%20week%20is%20genoeg.jpg",
+      "note": "#11 Angelique & Niels - drie keer per week is genoeg",
+      "enabled": true
+    },
+    {
+      "id": "w8-sat",
+      "week": 8,
+      "days": [
+        "sat"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/spiermassa%20komt%20niet%20vanzelf.jpg",
+      "note": "#1 Joep - spiermassa komt niet vanzelf",
+      "enabled": true
+    },
+    {
+      "id": "w8-sun",
+      "week": 8,
+      "days": [
+        "sun"
+      ],
+      "time": "18:30",
+      "media": "https://tmsrcar2riy3petr.public.blob.vercel-storage.com/vet%20verliezen%20zonder%20alles%20te%20schrappen.jpg",
+      "note": "#3 Angelique & Niels - vet verliezen zonder alles te schrappen",
+      "enabled": true
     }
   ]
 }
