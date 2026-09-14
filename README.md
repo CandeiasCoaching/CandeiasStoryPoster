@@ -23,31 +23,97 @@ api/status      ← open in a browser to check everything is wired up
 
 ## Setup
 
-**1. Add your images**
+**1. Add your media**
 
-Drop JPEGs into `public/ads/`. Requirements:
+Stills and video both work. Reference either with `media` in `schedule.json`.
+
+Stills - drop into `public/ads/`:
 
 - **JPEG only.** PNG and WebP are rejected by the API.
 - 1080 × 1920 (9:16). Other ratios get cropped unpredictably.
 - Under 8 MB.
 
-**2. Fill in `schedule.json`**
+Video - **host these outside the repo**:
+
+- MP4 or MOV, H.264 video + AAC audio, 1080 × 1920.
+- Keep clips short. Meta transcodes server-side before the story can publish,
+  so allow time for it. This project runs on Vercel **Pro**, where a function
+  may run 300 seconds; the code waits up to 4 minutes for a clip.
+- Deployment source limit on Pro is **1 GB** (100 MB on Hobby). The 38-file
+  library lives in Vercel Blob rather than the repo - not because it would not
+  fit, but because git keeps every version of every binary forever. Reference
+  hosted files with their full https:// URL as `media`:
+
+```json
+{ "media": "https://your-bucket.r2.dev/ov05-joep-shoulder-warmup.mp4" }
+```
+
+Anything starting `http://` or `https://` is used as-is. Anything else is
+treated as a path inside `public/`. The two mix freely, so a new ad can simply
+be dropped into `public/ads/` and referenced by path while the existing library
+stays in Blob.
+
+**2. `schedule.json` — the 8-week rotation**
 
 ```json
 {
-  "id": "mon-pre-reel",
-  "image": "ads/abc-hook-01.jpg",
-  "days": ["mon"],
-  "time": "18:30",
-  "enabled": true
+  "cycle": { "weeks": 8, "anchorDate": "2026-09-07" },
+  "posts": [
+    {
+      "id": "w1-tue",
+      "week": 1,
+      "days": ["tue"],
+      "time": "18:30",
+      "image": "ads/ov18-emmely-hip-thrust.jpg",
+      "note": "#18 Emmely - hip thrust",
+      "enabled": true
+    }
+  ]
 }
 ```
 
+`anchorDate` is the **Monday that starts rotation week 1**. After week 8 it
+loops back to week 1 on its own, forever.
+
+`week` pins a post to one rotation week. Leave `week` out and the post runs
+every week regardless of the cycle.
+
 Times are local Amsterdam time — the code handles the UTC conversion and the
-winter/summer clock change. Use `:00 :15 :30 :45` for exact firing.
+clock change. Use `:00 :15 :30 :45` for exact firing.
 
 `days` takes short weekday names (`mon`, `tue`, …) or `"daily"`.
 `enabled: false` parks a post without deleting it.
+
+**Mon / Wed / Fri are deliberately empty.** Those are reel days, and the API
+cannot reshare a reel to your story the way the app does — it would post a flat
+still with no reel link. Those four seconds stay manual.
+
+**2b. Move your media to Vercel Blob**
+
+180 MB of story files cannot live in the repo (Hobby allows 100 MB of source
+files per deployment). Put them in Blob instead:
+
+```bash
+npm i -g vercel
+vercel login
+vercel link                                    # inside this project folder
+
+# The store MUST be public - Meta fetches your media anonymously,
+# and access mode cannot be changed after the store is created.
+vercel blob create-store candeias-media --access public --yes
+
+node scripts/upload-media.mjs "C:\path\to\your story folder" --dry
+node scripts/upload-media.mjs "C:\path\to\your story folder"
+```
+
+The script uploads every file and rewrites `schedule.json` to point at the
+resulting public URLs. Matching is by filename, ignoring extension - so a local
+`ov18-emmely-hip-thrust.mp4` satisfies a schedule entry pointing at
+`ads/ov18-emmely-hip-thrust.jpg`. Run `--dry` first: it reports files the
+schedule does not reference and schedule entries with no matching file, without
+uploading anything.
+
+Commit the rewritten `schedule.json` afterwards.
 
 **3. Deploy and set env vars**
 
@@ -96,6 +162,20 @@ Check `/api/status` first — it catches most of it.
 | `Media type not supported` | File isn't genuinely JPEG (a renamed `.png` still fails) |
 | Nothing fires | Cron secret mismatch, or `enabled: false`, or the time doesn't land on a quarter hour |
 | Posts an hour early/late | Someone put UTC times in `schedule.json` instead of local ones |
+
+## Token storage
+
+The access token is refreshed weekly and kept in the KV store. Two things that
+bit us and are worth not repeating:
+
+- **Write it as plain text.** `JSON.stringify()` on a string wraps it in literal
+  double quotes, Upstash stores the body verbatim, and Meta then rejects the
+  token with "Cannot parse access token". `getToken()` now strips stray quotes
+  on read, so a store corrupted this way repairs itself.
+- **The status page reports where the token actually came from**, not merely
+  whether KV is configured. When the weekly refresh silently switched the live
+  token from the environment variable to a corrupted KV value, nothing on the
+  dashboard changed - which is why it took a failed morning to notice.
 
 ## Security
 

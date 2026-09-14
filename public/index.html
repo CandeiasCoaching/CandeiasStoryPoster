@@ -94,8 +94,9 @@
   </div>
 
   <div class="links">
-    <a href="#" id="verify">Verify all media files</a>
+    <a href="?media=1" id="verify">Verify all media files</a>
     <a href="/api/status?media=1">Raw status JSON</a>
+    <a href="./">Reset</a>
     <a href="/api/post-story?dryRun=1">Dry run</a>
   </div>
 </div>
@@ -157,11 +158,6 @@ function load(withMedia){
     .catch(showError);
 }
 
-document.getElementById('verify').addEventListener('click', e => {
-  e.preventDefault();
-  load(true);
-});
-
 function showError(err){
   document.getElementById('dot').className = 'dot bad';
   document.getElementById('headline').textContent = 'Could not reach /api/status';
@@ -171,7 +167,12 @@ function showError(err){
   document.getElementById('week').textContent = '—';
 }
 
-load(false);
+// The ?media=1 in the page's own address is what turns the check on. Using the
+// address rather than a click handler means the browser does the work, and a
+// single broken line of JS cannot silently disable the button.
+const wantsMedia = new URLSearchParams(location.search).has('media');
+if (wantsMedia) document.getElementById('verify').textContent = 'Re-check media files';
+load(wantsMedia);
 </script>
 </body>
 </html>
