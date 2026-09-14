@@ -1,5 +1,5 @@
 import { contentPublishingLimit } from '../lib/instagram.js';
-import { getToken, kvConfigured } from '../lib/token-store.js';
+import { getTokenWithSource, kvConfigured } from '../lib/token-store.js';
 import {
   loadSchedule,
   nowInZone,
@@ -45,9 +45,13 @@ async function buildChecks(checks, req) {
 
   let token = null;
   try {
-    token = await getToken();
+    const got = await getTokenWithSource();
+    token = got.token;
     checks.accessToken = token ? `set (${token.length} chars)` : 'MISSING';
-    checks.tokenSource = kvConfigured() ? 'KV store' : 'env var only (no auto-refresh)';
+    checks.tokenSource = got.source;
+    if (token && !/^[A-Za-z0-9._-]+$/.test(token)) {
+      checks.accessToken = `MISSING - token contains unexpected characters (${token.length} chars)`;
+    }
   } catch (err) {
     checks.accessToken = `FAILED reading token: ${err.message}`;
   }
